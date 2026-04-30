@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Meet the Cypress Centurion Boys Soccer varsity, junior varsity, and fresh/soph teams."
+    >
+    <title>Meet Our Team | Cypress High Soccer</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="index.html#home" aria-label="Cypress Centurion Boys Soccer home">
+          <img
+            class="brand-logo"
+            src="assets/Cypress_High_School_40th_Anniversary_Logo.png"
+            alt="Cypress High School logo"
+          >
+          <span class="brand-copy">
+            <span class="brand-title">Cypress Centurion</span>
+            <span class="brand-subtitle">Boys Soccer</span>
+          </span>
+        </a>
+
+        <button
+          class="menu-toggle"
+          type="button"
+          aria-label="Open navigation menu"
+          aria-controls="primary-navigation"
+          aria-expanded="false"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <nav id="primary-navigation" class="main-nav" aria-label="Primary navigation">
+          <a href="index.html#home">Home</a>
+          <a class="active" href="meet-our-team.html">Team</a>
+          <a href="schedule.html">Schedule</a>
+          <a href="forms.html">Forms</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content" class="team-page">
+      <section class="roster-section" aria-labelledby="team-title">
+        <h1 id="team-title">Meet Our Team</h1>
+
+        <div class="roster-status" data-roster-status hidden></div>
+
+        <div class="roster-grid" data-roster-grid data-roster-api="/api/roster">
+          <article class="roster-group">
+            <h2>Varsity</h2>
+            <ul>
+              <li>Peter Batsaras</li>
+              <li>Isaiah Manzo</li>
+              <li>Ahmed Elghazaly</li>
+              <li>Aiden Johnson</li>
+              <li>Jared Estrada</li>
+              <li>Giovanni Loza</li>
+              <li>Alan Nguyen</li>
+              <li>Christian Signer</li>
+              <li>Alekai Ayala</li>
+              <li>Steven Soriano</li>
+              <li>Anthony Soriano</li>
+              <li>Zaid Reyes</li>
+              <li>Johnathan Alvarez</li>
+              <li>Colin Howley</li>
+              <li>Elijah Ochoa</li>
+              <li>Taisei Kosaki</li>
+              <li>Mathew Avalos</li>
+              <li>Brayden Piestrzeniewicz</li>
+              <li>Zachary Groen</li>
+              <li>Jacob Cortez</li>
+              <li>Mohamed Abuukhalaf</li>
+              <li>Jayden Pham</li>
+              <li>Carlos Najera</li>
+            </ul>
+            <button class="roster-toggle" type="button" aria-expanded="false">View All +</button>
+          </article>
+
+          <article class="roster-group">
+            <h2>Jr. Varsity</h2>
+            <ul>
+              <li>Aiden Nicholson</li>
+              <li>Shady Elagamy</li>
+              <li>Jay Sim</li>
+              <li>Mohammed Kanan</li>
+              <li>Andrew Bowerman</li>
+              <li>Isaiah Sanchez</li>
+              <li>Alejandro Gonzalez</li>
+              <li>Aaron Peters</li>
+              <li>Scottie Olsen</li>
+              <li>Franklin Solano</li>
+              <li>Andrei Nikollic</li>
+              <li>Julian Gutierrez</li>
+              <li>Justin Mukai</li>
+              <li>Omar Ibrahim</li>
+              <li>Ethan Baltazar</li>
+              <li>Ethan Cota</li>
+              <li>Javiier Murillo</li>
+              <li>Brian Tivadar</li>
+              <li>Mohammed Abdulkarim</li>
+              <li>Slade Harker</li>
+              <li>Owen Tredway</li>
+              <li>Damian Bravo</li>
+              <li>Jospeh Pudilo</li>
+            </ul>
+            <button class="roster-toggle" type="button" aria-expanded="false">View All +</button>
+          </article>
+
+          <article class="roster-group">
+            <h2>Fresh/Soph</h2>
+            <ul>
+              <li>Lucas Kottel</li>
+              <li>Julian Loza</li>
+              <li>Samuel Amezcua</li>
+              <li>Diego Meza</li>
+              <li>David Kim</li>
+              <li>Zaid Aldweik</li>
+              <li>Miguel Chavelas</li>
+              <li>Ethan Robertson</li>
+              <li>Nicholas Ricardez</li>
+              <li>Mohammed Kanan</li>
+              <li>Jonathan Castaneda</li>
+              <li>Josiah Tapia</li>
+              <li>Kale Jacolbia</li>
+              <li>Konnor Wawrzynski</li>
+              <li>Ezequiel Angulo</li>
+              <li>Evan Nakahara</li>
+              <li>Damian Brambila</li>
+              <li>Adam Rodriguez</li>
+              <li>Nbil Aldweik</li>
+              <li>Alejandro Ramirez</li>
+            </ul>
+            <button class="roster-toggle" type="button" aria-expanded="false">View All +</button>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="social-links" aria-label="Social links">
+        <a href="#" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+            <circle cx="12" cy="12" r="4"></circle>
+            <circle cx="17.3" cy="6.7" r="1"></circle>
+          </svg>
+        </a>
+        <a href="#" aria-label="Facebook">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M14 8h2V4h-3c-3 0-5 2-5 5v2H6v4h2v5h4v-5h3l1-4h-4V9c0-.6.4-1 2-1Z"></path>
+          </svg>
+        </a>
+      </div>
+      <p>Copyright 2025</p>
+    </footer>
+  </body>
+</html>

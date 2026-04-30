@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Cypress Centurion Boys Soccer official team website."
+    >
+    <title>Home | Cypress High Soccer</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="index.html#home" aria-label="Cypress Centurion Boys Soccer home">
+          <img
+            class="brand-logo"
+            src="assets/Cypress_High_School_40th_Anniversary_Logo.png"
+            alt="Cypress High School logo"
+          >
+          <span class="brand-copy">
+            <span class="brand-title">Cypress Centurion</span>
+            <span class="brand-subtitle">Boys Soccer</span>
+          </span>
+        </a>
+
+        <button
+          class="menu-toggle"
+          type="button"
+          aria-label="Open navigation menu"
+          aria-controls="primary-navigation"
+          aria-expanded="false"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <nav id="primary-navigation" class="main-nav" aria-label="Primary navigation">
+          <a class="active" href="index.html#home">Home</a>
+          <a href="meet-our-team.html">Team</a>
+          <a href="schedule.html">Schedule</a>
+          <a href="forms.html">Forms</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section id="home" class="hero" aria-label="Cypress Centurion soccer">
+        <video
+          class="hero-video"
+          autoplay
+          loop
+          muted
+          playsinline
+          preload="metadata"
+          aria-hidden="true"
+        >
+          <source src="assets/chs_boys_hero_video.mp4" type="video/mp4">
+        </video>
+        <div class="hero-content">
+          <h1>
+            <span class="hero-line line-1">One Team.</span>
+            <span class="hero-line line-2">One Goal.</span>
+            <span class="hero-line line-3">No Limits.</span>
+          </h1>
+          <p class="hero-line line-4">..this is Centurion Soccer</p>
+        </div>
+      </section>
+
+      <section class="sponsors" aria-label="Sponsors">
+        <div class="sponsor-strip">
+          <img
+            src="assets/IWM_Inc_Color_36_-removebg-preview_edited.png"
+            alt="Ivanoff Wealth Management Inc."
+          >
+          <img
+            src="assets/shift_socks_logo_edited.png"
+            alt="Shift Socks"
+          >
+          <img
+            src="assets/solutions-direct-logo-color_edited.png"
+            alt="Solutions Direct"
+          >
+        </div>
+      </section>
+
+      <section id="team" class="match-section">
+        <h2>Upcoming Match</h2>
+        <div class="match-card" aria-label="Upcoming match" data-next-match>
+          <div class="match-row">
+            <img
+              class="team-mark cypress-mark"
+              src="assets/Cypress_High_School_40th_Anniversary_Logo.png"
+              alt="Cypress High School"
+            >
+            <span class="versus">Vs</span>
+            <img
+              class="team-mark opponent-mark"
+              src="assets/valencia_placentia_hs.png"
+              alt="Valencia HS"
+              data-next-match-logo
+            >
+          </div>
+          <div class="match-copy">
+            <span data-next-match-date>October 22, 2025</span>
+            <span data-next-match-location>Valencia HS (Placentia)</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="schedule" class="schedule-section" hidden>
+        <h2>Schedule</h2>
+        <p><a href="schedule.html">View season calendar</a></p>
+      </section>
+
+      <section id="forms" class="sr-only" aria-label="Forms"></section>
+      <section id="contact" class="sr-only" aria-label="Contact"></section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="social-links" aria-label="Social links">
+        <a href="#" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+            <circle cx="12" cy="12" r="4"></circle>
+            <circle cx="17.3" cy="6.7" r="1"></circle>
+          </svg>
+        </a>
+        <a href="#" aria-label="Facebook">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M14 8h2V4h-3c-3 0-5 2-5 5v2H6v4h2v5h4v-5h3l1-4h-4V9c0-.6.4-1 2-1Z"></path>
+          </svg>
+        </a>
+      </div>
+      <p>Copyright 2025</p>
+    </footer>
+  </body>
+</html>
