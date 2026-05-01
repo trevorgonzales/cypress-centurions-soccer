@@ -20,6 +20,8 @@ const contactForm = document.querySelector("[data-contact-form]");
 const contactStatus = document.querySelector("[data-contact-status]");
 const turnstileContainer = document.querySelector("[data-turnstile-container]");
 let turnstileWidgetId = null;
+const transparentPixel =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 
 function syncMotionPreference() {
   if (!heroVideo) return;
@@ -418,7 +420,21 @@ function renderScheduleCards(events) {
 }
 
 function renderNextVarsityMatch(match) {
-  if (!nextMatchCard || !match) return;
+  if (!nextMatchCard) return;
+
+  if (!match) {
+    if (nextMatchDate) nextMatchDate.textContent = "Schedule coming soon";
+    if (nextMatchLocation) {
+      nextMatchLocation.textContent = "Check back for the next match";
+    }
+    if (nextMatchLogo) {
+      nextMatchLogo.src = transparentPixel;
+      nextMatchLogo.alt = "";
+      nextMatchLogo.setAttribute("aria-hidden", "true");
+    }
+    nextMatchCard.setAttribute("aria-label", "Upcoming match schedule coming soon");
+    return;
+  }
 
   if (nextMatchDate) {
     nextMatchDate.textContent = formatGameDate(match.date);
@@ -428,9 +444,10 @@ function renderNextVarsityMatch(match) {
     nextMatchLocation.textContent = match.location || match.opponent || "Location TBD";
   }
 
-  if (nextMatchLogo && match.logo) {
-    nextMatchLogo.src = match.logo;
-    nextMatchLogo.alt = match.opponent || "Upcoming opponent";
+  if (nextMatchLogo) {
+    nextMatchLogo.src = match.logo || transparentPixel;
+    nextMatchLogo.alt = match.logo ? match.opponent || "Upcoming opponent" : "";
+    nextMatchLogo.toggleAttribute("aria-hidden", !match.logo);
   }
 
   const labelParts = ["Upcoming match"];

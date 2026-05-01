@@ -18,7 +18,9 @@ Deployment is managed through Cloudflare Pages connected to GitHub.
 4. Paste that URL into `schedule-config.js` as `googleCalendarEmbedUrl`.
 
 The Upcoming Games cards are loaded from the Cloudflare Pages Function at `/api/schedule`.
-That function fetches the public Google Calendar iCal feed and returns future events as JSON.
+That function fetches the public Google Calendar iCal feed, parses future events, and caches
+the JSON response at Cloudflare's edge for 5 minutes so visitors usually see current schedule
+data without waiting on a live Google Calendar request.
 
 By default it uses:
 

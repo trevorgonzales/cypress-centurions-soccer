@@ -1,5 +1,6 @@
 const DEFAULT_ICS_URL =
   "https://calendar.google.com/calendar/ical/cypresshighsoccer%40gmail.com/public/basic.ics";
+const SCHEDULE_CACHE_SECONDS = 300;
 
 const SCHOOL_LOGOS = {
   "Anaheim HS": "https://assets.chsboyssoccer.com/anaheim_hs.png",
@@ -138,35 +139,70 @@ function getNextVarsityMatch(events) {
   };
 }
 
+function getScheduleHeaders(cacheStatus) {
+  return {
+    "Cache-Control": `public, max-age=${SCHEDULE_CACHE_SECONDS}`,
+    "Content-Type": "application/json; charset=utf-8",
+    "X-Calendar-Cache": cacheStatus,
+  };
+}
+
+async function fetchSchedule(icsUrl) {
+  const response = await fetch(icsUrl, {
+    headers: {
+      Accept: "text/calendar,text/plain,*/*",
+    },
+    cf: {
+      cacheEverything: true,
+      cacheTtl: SCHEDULE_CACHE_SECONDS,
+    },
+  });
+
+  if (!response.ok) {
+    return Response.json(
+      { error: "Unable to fetch calendar.", events: [] },
+      { status: 502 }
+    );
+  }
+
+  const icsText = await response.text();
+  const events = parseEvents(icsText);
+  const nextVarsityMatch = getNextVarsityMatch(events);
+
+  return new Response(JSON.stringify({ events, nextVarsityMatch }), {
+    headers: getScheduleHeaders("MISS"),
+  });
+}
+
 export async function onRequestGet(context) {
   const icsUrl = context.env.GOOGLE_CALENDAR_ICS_URL || DEFAULT_ICS_URL;
 
   try {
-    const response = await fetch(icsUrl, {
-      headers: {
-        Accept: "text/calendar,text/plain,*/*",
-      },
-    });
+    const cache = typeof caches !== "undefined" ? caches.default : null;
+    const cacheKey = new Request(
+      new URL(`/api/schedule?ics=${encodeURIComponent(icsUrl)}`, context.request.url),
+      context.request
+    );
 
-    if (!response.ok) {
-      return Response.json(
-        { error: "Unable to fetch calendar.", events: [] },
-        { status: 502 }
-      );
+    if (cache) {
+      const cachedResponse = await cache.match(cacheKey);
+      if (cachedResponse) {
+        const headers = new Headers(cachedResponse.headers);
+        headers.set("X-Calendar-Cache", "HIT");
+        return new Response(cachedResponse.body, {
+          status: cachedResponse.status,
+          statusText: cachedResponse.statusText,
+          headers,
+        });
+      }
     }
 
-    const icsText = await response.text();
-    const events = parseEvents(icsText);
-    const nextVarsityMatch = getNextVarsityMatch(events);
+    const response = await fetchSchedule(icsUrl);
+    if (response.ok && cache) {
+      context.waitUntil(cache.put(cacheKey, response.clone()));
+    }
 
-    return Response.json(
-      { events, nextVarsityMatch },
-      {
-        headers: {
-          "Cache-Control": "public, max-age=300",
-        },
-      }
-    );
+    return response;
   } catch (error) {
     return Response.json(
       { error: "Unable to load schedule.", events: [] },
