@@ -2,6 +2,8 @@
 
 Static website for Cypress Centurion Boys Soccer, ready for Cloudflare Pages.
 
+Deployment is managed through Cloudflare Pages connected to GitHub.
+
 ## Cloudflare Pages Settings
 
 - Build command: leave blank
