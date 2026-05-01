@@ -422,6 +422,9 @@ function renderScheduleCards(events) {
 function renderNextVarsityMatch(match) {
   if (!nextMatchCard) return;
 
+  nextMatchCard.classList.remove("is-loading");
+  nextMatchCard.setAttribute("aria-busy", "false");
+
   if (!match) {
     if (nextMatchDate) nextMatchDate.textContent = "Schedule coming soon";
     if (nextMatchLocation) {
@@ -493,12 +496,15 @@ async function loadNextMatch() {
 
   try {
     const response = await fetch("/api/schedule");
-    if (!response.ok) return;
+    if (!response.ok) {
+      renderNextVarsityMatch(null);
+      return;
+    }
 
     const data = await response.json();
     renderNextVarsityMatch(data.nextVarsityMatch);
   } catch (error) {
-    // Keep the static fallback match visible.
+    renderNextVarsityMatch(null);
   }
 }
 

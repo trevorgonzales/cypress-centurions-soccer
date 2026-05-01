@@ -91,7 +91,12 @@
 
       <section id="team" class="match-section">
         <h2>Upcoming Match</h2>
-        <div class="match-card" aria-label="Upcoming match" data-next-match>
+        <div
+          class="match-card is-loading"
+          aria-label="Upcoming match loading from the team calendar"
+          aria-busy="true"
+          data-next-match
+        >
           <div class="match-row">
             <img
               class="team-mark cypress-mark"
@@ -99,13 +104,20 @@
               alt="Cypress High School"
             >
             <span class="versus">Vs</span>
-            <img
-              class="team-mark opponent-mark"
-              src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
-              alt=""
-              aria-hidden="true"
-              data-next-match-logo
-            >
+            <div class="opponent-slot">
+              <img
+                class="team-mark opponent-mark"
+                src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
+                alt=""
+                aria-hidden="true"
+                data-next-match-logo
+              >
+              <div class="opponent-loader" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
           </div>
           <div class="match-copy">
             <span data-next-match-date>Loading schedule...</span>
