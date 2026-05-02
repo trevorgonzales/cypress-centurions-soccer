@@ -8,8 +8,8 @@
       content="Cypress Centurion Boys Soccer official team website."
     >
     <title>Home | Cypress High Soccer</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20260501-2">
+    <script src="script.js?v=20260501-2" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -103,7 +103,13 @@
               src="https://assets.chsboyssoccer.com/Cypress_High_School_40th_Anniversary_Logo.png"
               alt="Cypress High School"
             >
-            <span class="versus">Vs</span>
+            <div class="match-center">
+              <span class="versus">Vs</span>
+              <div class="match-copy">
+                <span data-next-match-date>Loading schedule...</span>
+                <span data-next-match-location>Checking the team calendar</span>
+              </div>
+            </div>
             <div class="opponent-slot">
               <img
                 class="team-mark opponent-mark"
@@ -118,10 +124,6 @@
                 <span></span>
               </div>
             </div>
-          </div>
-          <div class="match-copy">
-            <span data-next-match-date>Loading schedule...</span>
-            <span data-next-match-location>Checking the team calendar</span>
           </div>
         </div>
       </section>
