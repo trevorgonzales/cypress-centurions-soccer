@@ -23,6 +23,7 @@ const turnstileContainer = document.querySelector("[data-turnstile-container]");
 let turnstileWidgetId = null;
 const transparentPixel =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+const upcomingGameCardLimit = 2;
 let calendarMonthDate = null;
 
 function syncMotionPreference() {
@@ -464,36 +465,44 @@ function renderScheduleCards(events) {
 
   if (calendarPanel) calendarPanel.hidden = false;
 
-  scheduleList.innerHTML = groupEventsByDate(events)
-    .map(
-      (group) => `
-        <article class="game-card">
-          <time class="game-date" datetime="${escapeHtml(group.date)}">${escapeHtml(formatGameDate(group.date))}</time>
-          <h3 class="game-title">${escapeHtml(group.opponent)}</h3>
-          <div class="game-meta">
-            <span>${escapeHtml(group.location || "Location TBD")}</span>
-          </div>
-          <ul class="game-team-list">
-            ${group.games
-              .map(
-                (game) => `
-                  <li>
-                    <span class="game-team">${escapeHtml(getTeamLabel(game))}</span>
-                    <span class="game-time">${escapeHtml(game.time || "Time TBD")}</span>
-                    ${
-                      group.opponent === "Multiple games"
-                        ? `<span class="game-opponent">${escapeHtml(game.opponent || "Opponent TBD")}</span>`
-                        : ""
-                    }
-                  </li>
-                `
-              )
-              .join("")}
-          </ul>
-        </article>
-      `
-    )
-    .join("");
+  const groupedEvents = groupEventsByDate(events);
+  const visibleGroups = groupedEvents.slice(0, upcomingGameCardLimit);
+  const hasMoreEvents = groupedEvents.length > visibleGroups.length;
+
+  scheduleList.innerHTML =
+    visibleGroups
+      .map(
+        (group) => `
+          <article class="game-card">
+            <time class="game-date" datetime="${escapeHtml(group.date)}">${escapeHtml(formatGameDate(group.date))}</time>
+            <h3 class="game-title">${escapeHtml(group.opponent)}</h3>
+            <div class="game-meta">
+              <span>${escapeHtml(group.location || "Location TBD")}</span>
+            </div>
+            <ul class="game-team-list">
+              ${group.games
+                .map(
+                  (game) => `
+                    <li>
+                      <span class="game-team">${escapeHtml(getTeamLabel(game))}</span>
+                      <span class="game-time">${escapeHtml(game.time || "Time TBD")}</span>
+                      ${
+                        group.opponent === "Multiple games"
+                          ? `<span class="game-opponent">${escapeHtml(game.opponent || "Opponent TBD")}</span>`
+                          : ""
+                      }
+                    </li>
+                  `
+                )
+                .join("")}
+            </ul>
+          </article>
+        `
+      )
+      .join("") +
+    (hasMoreEvents
+      ? '<p class="schedule-more-note">See calendar for more upcoming games.</p>'
+      : "");
 
   renderTeamCalendar(events);
 }
