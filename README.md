@@ -10,35 +10,49 @@ Deployment is managed through Cloudflare Pages connected to GitHub.
 - Build output directory: `/`
 - Production branch: `main`
 
-## Google Calendar Schedule
+## Google Sheets Schedule
 
-1. In Google Calendar, open the team calendar settings.
-2. Under access permissions, make the calendar public.
-3. Under Integrate calendar, copy the iframe `src` URL.
-4. Paste that URL into `schedule-config.js` as `googleCalendarEmbedUrl`.
+The Upcoming Games cards and homepage Upcoming Match block are loaded from the
+Cloudflare Pages Function at `/api/schedule`.
 
-The Upcoming Games cards are loaded from the Cloudflare Pages Function at `/api/schedule`.
-That function fetches the public Google Calendar iCal feed, parses future events, and caches
-the JSON response at Cloudflare's edge for 5 minutes so visitors usually see current schedule
-data without waiting on a live Google Calendar request.
+The preferred schedule source is a published Google Sheets CSV. Create a Google Sheet
+named `Cypress HS Soccer Schedule` with a first tab that uses this exact header row:
 
-By default it uses:
+`date,time,team,opponent,location,homeAway,status,logoKey,logoUrl`
 
-`https://calendar.google.com/calendar/ical/cypresshighsoccer%40gmail.com/public/basic.ics`
+Minimum required columns per row:
 
-To change it in Cloudflare without editing code, add a Pages environment variable:
+- `date`
+- `team`
+- `opponent`
 
-`GOOGLE_CALENDAR_ICS_URL`
+Supported date formats:
 
-Upcoming game cards can also be added as a local fallback in `schedule-config.js` under `events`.
+- `YYYY-MM-DD`
+- `M/D/YYYY`
 
-For the homepage Upcoming Match block, name varsity calendar events like:
+Example row:
 
-`Varsity vs Valencia HS`
+`2026-01-12,5:00 PM,Varsity,Valencia HS,Valencia HS (Placentia),Away,scheduled,Valencia HS,`
 
-or:
+Publish the sheet tab as CSV, then add the published CSV URL to Cloudflare Pages as:
 
-`Varsity @ Valencia HS`
+`SCHEDULE_CSV_URL`
+
+The function parses future events, sorts them by date/time, chooses the next `Varsity`
+match for the homepage, and caches the JSON response at Cloudflare's edge for 5 minutes.
+
+If `SCHEDULE_CSV_URL` is not configured yet, `/api/schedule` temporarily falls back to
+the original public Google Calendar iCal feed so the live site keeps working during setup.
+
+Optional fields:
+
+- `time`: shown on schedule cards; blank becomes `Time TBD`
+- `location`: shown on schedule cards and homepage; blank becomes `Location TBD`
+- `homeAway`: use `Home` or `Away`; away games render summaries with `@`
+- `status`: `cancelled`, `canceled`, and `postponed` rows are hidden
+- `logoKey`: maps the opponent to one of the supported logo keys below
+- `logoUrl`: overrides the logo map with a direct image URL
 
 Supported opponent logo keys:
 
@@ -47,9 +61,23 @@ Supported opponent logo keys:
 - `Buena Park HS`
 - `Cal HS`
 - `Corona del Mar HS`
+- `Cypress HS`
+- `Cypress High School`
+- `Crean Luthern HS`
+- `Edison HS`
 - `El Toro HS`
+- `Laguna Hills HS`
+- `Newport Harbor HS`
+- `Santa Ana Valley HS`
+- `St. Margarets HS`
 - `Sunny Hills HS`
+- `Trabuco Hills HS`
+- `Troy HS`
 - `Valencia HS`
+- `Valencia HS (Placentia)`
+- `Villa Park HS`
+- `Warren HS`
+- `Yorba Linda HS`
 
 ## Google Sheets Roster
 

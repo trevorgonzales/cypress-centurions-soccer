@@ -394,6 +394,7 @@ function getFutureEvents(events) {
 
 function renderScheduleCards(events) {
   if (!scheduleList) return;
+  const hasCalendarEmbed = Boolean(window.CHS_SCHEDULE?.googleCalendarEmbedUrl);
 
   if (!events.length) {
     if (calendarPanel) calendarPanel.hidden = true;
@@ -401,7 +402,7 @@ function renderScheduleCards(events) {
     return;
   }
 
-  if (calendarPanel) calendarPanel.hidden = false;
+  if (calendarPanel) calendarPanel.hidden = !hasCalendarEmbed;
 
   scheduleList.innerHTML = events
     .map(

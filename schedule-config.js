@@ -1,6 +1,6 @@
 window.CHS_SCHEDULE = {
-  // Paste the Google Calendar iframe src here after making the calendar public.
-  googleCalendarEmbedUrl: "https://calendar.google.com/calendar/embed?src=cypresshighsoccer%40gmail.com&ctz=America%2FLos_Angeles",
+  // Optional: paste a calendar iframe src here if you want to embed a separate calendar view.
+  googleCalendarEmbedUrl: "",
   scheduleApiUrl: "/api/schedule",
   events: [],
 };
