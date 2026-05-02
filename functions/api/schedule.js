@@ -274,10 +274,18 @@ function parseVarsityOpponent(summary) {
   return match ? match[1].trim() : "";
 }
 
-function getNextVarsityMatch(events) {
-  const varsityMatch = events.find((event) =>
-    /\bVarsity\b/i.test(event.team || event.summary)
+function isVarsityEvent(event) {
+  const team = String(event.team || "").trim();
+  if (team) return /^varsity$/i.test(team);
+
+  return (
+    /\bVarsity\b/i.test(event.summary) &&
+    !/\b(Jr\.?|Junior|JV)\s*Varsity\b/i.test(event.summary)
   );
+}
+
+function getNextVarsityMatch(events) {
+  const varsityMatch = events.find((event) => isVarsityEvent(event));
   if (!varsityMatch) return null;
 
   const opponent =

@@ -23,6 +23,10 @@ body {
   background: var(--white);
 }
 
+[hidden] {
+  display: none !important;
+}
+
 main {
   display: flex;
   flex-direction: column;
@@ -870,6 +874,45 @@ button:focus-visible {
   line-height: 1.35;
 }
 
+.game-team-list {
+  display: grid;
+  gap: 8px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.game-team-list li {
+  display: grid;
+  grid-template-columns: minmax(88px, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 9px 10px;
+  background: var(--white);
+  color: #444;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.game-team,
+.game-time {
+  font-weight: 700;
+}
+
+.game-team {
+  color: var(--text);
+}
+
+.game-time {
+  color: var(--orange);
+  white-space: nowrap;
+}
+
+.game-opponent {
+  grid-column: 1 / -1;
+  overflow-wrap: anywhere;
+}
+
 .schedule-empty {
   padding: 24px 16px;
   color: #555;
@@ -906,6 +949,119 @@ button:focus-visible {
 
 .calendar-empty p {
   margin: 0;
+}
+
+.team-calendar {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.calendar-toolbar {
+  display: grid;
+  grid-template-columns: 72px 1fr 72px;
+  gap: 8px;
+  align-items: center;
+}
+
+.calendar-toolbar h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.calendar-toolbar button {
+  min-height: 38px;
+  border: 1px solid rgba(8, 37, 66, 0.2);
+  background: var(--white);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.calendar-toolbar button:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.calendar-weekdays,
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendar-weekdays span {
+  padding: 0 4px 5px;
+  color: #555;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.calendar-grid {
+  border-top: 1px solid #dedede;
+  border-left: 1px solid #dedede;
+}
+
+.calendar-day {
+  min-height: 74px;
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  padding: 7px;
+  border-right: 1px solid #dedede;
+  border-bottom: 1px solid #dedede;
+  background: var(--white);
+}
+
+.calendar-day.is-muted {
+  background: #f1f1f1;
+  color: #8a8a8a;
+}
+
+.calendar-day.has-games {
+  background: #fff8f3;
+}
+
+.calendar-day time {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.calendar-day ul {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.calendar-day li {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  padding: 4px;
+  background: rgba(8, 37, 66, 0.08);
+  color: var(--text);
+  font-size: 10px;
+  line-height: 1.15;
+}
+
+.calendar-day li span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-day li span:last-child {
+  color: var(--orange);
+  font-weight: 700;
 }
 
 .site-footer {

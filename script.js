@@ -9,6 +9,7 @@ const scheduleList = document.querySelector("[data-schedule-list]");
 const calendarPanel = document.querySelector("[data-calendar-panel]");
 const calendarFrame = document.querySelector("[data-calendar-frame]");
 const calendarEmpty = document.querySelector("[data-calendar-empty]");
+const teamCalendar = document.querySelector("[data-team-calendar]");
 const rosterStatus = document.querySelector("[data-roster-status]");
 const nextMatchCard = document.querySelector("[data-next-match]");
 const nextMatchLogo = document.querySelector("[data-next-match-logo]");
@@ -22,6 +23,7 @@ const turnstileContainer = document.querySelector("[data-turnstile-container]");
 let turnstileWidgetId = null;
 const transparentPixel =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+let calendarMonthDate = null;
 
 function syncMotionPreference() {
   if (!heroVideo) return;
@@ -210,6 +212,13 @@ function formatGameDate(dateValue) {
   }).format(date);
 }
 
+function formatMonthLabel(date) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -392,32 +401,219 @@ function getFutureEvents(events) {
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 }
 
+function getDateFromValue(dateValue) {
+  const date = new Date(`${dateValue}T00:00:00`);
+  return Number.isNaN(date.valueOf()) ? null : date;
+}
+
+function getTeamLabel(event) {
+  const value = String(event.team || event.summary || "").trim();
+  const labels = [
+    ["Fresh/Soph", /\b(fresh\s*\/?\s*soph|frosh|fs)\b/i],
+    ["Jr. Varsity", /\b(jr\.?\s*varsity|junior\s*varsity|jv)\b/i],
+    ["Varsity", /\bvarsity\b/i],
+  ];
+
+  const match = labels.find(([, pattern]) => pattern.test(value));
+  return match ? match[0] : value || "Game";
+}
+
+function getTeamSortValue(event) {
+  const label = getTeamLabel(event);
+  const order = {
+    "Fresh/Soph": 0,
+    "Jr. Varsity": 1,
+    Varsity: 2,
+  };
+
+  return order[label] ?? 3;
+}
+
+function groupEventsByDate(events) {
+  const groups = new Map();
+
+  events.forEach((event) => {
+    if (!event.date) return;
+    if (!groups.has(event.date)) groups.set(event.date, []);
+    groups.get(event.date).push(event);
+  });
+
+  return Array.from(groups, ([date, games]) => {
+    const firstGame = games[0] || {};
+    const hasOneOpponent = games.every((game) => game.opponent === firstGame.opponent);
+    const hasOneLocation = games.every((game) => game.location === firstGame.location);
+
+    return {
+      date,
+      opponent: hasOneOpponent ? firstGame.opponent : "Multiple games",
+      location: hasOneLocation ? firstGame.location : "Multiple locations",
+      games: [...games].sort((a, b) => getTeamSortValue(a) - getTeamSortValue(b)),
+    };
+  });
+}
+
 function renderScheduleCards(events) {
   if (!scheduleList) return;
-  const hasCalendarEmbed = Boolean(window.CHS_SCHEDULE?.googleCalendarEmbedUrl);
 
   if (!events.length) {
     if (calendarPanel) calendarPanel.hidden = true;
     scheduleList.innerHTML = '<div class="schedule-empty"><p>No games scheduled.</p></div>';
+    renderTeamCalendar([]);
     return;
   }
 
-  if (calendarPanel) calendarPanel.hidden = !hasCalendarEmbed;
+  if (calendarPanel) calendarPanel.hidden = false;
 
-  scheduleList.innerHTML = events
+  scheduleList.innerHTML = groupEventsByDate(events)
     .map(
-      (event) => `
+      (group) => `
         <article class="game-card">
-          <time class="game-date" datetime="${escapeHtml(event.date)}">${escapeHtml(formatGameDate(event.date))}</time>
-          <h3 class="game-title">${escapeHtml(event.opponent)}</h3>
+          <time class="game-date" datetime="${escapeHtml(group.date)}">${escapeHtml(formatGameDate(group.date))}</time>
+          <h3 class="game-title">${escapeHtml(group.opponent)}</h3>
           <div class="game-meta">
-            <span>${escapeHtml(event.time || "Time TBD")}</span>
-            <span>${escapeHtml(event.location || "Location TBD")}</span>
+            <span>${escapeHtml(group.location || "Location TBD")}</span>
           </div>
+          <ul class="game-team-list">
+            ${group.games
+              .map(
+                (game) => `
+                  <li>
+                    <span class="game-team">${escapeHtml(getTeamLabel(game))}</span>
+                    <span class="game-time">${escapeHtml(game.time || "Time TBD")}</span>
+                    ${
+                      group.opponent === "Multiple games"
+                        ? `<span class="game-opponent">${escapeHtml(game.opponent || "Opponent TBD")}</span>`
+                        : ""
+                    }
+                  </li>
+                `
+              )
+              .join("")}
+          </ul>
         </article>
       `
     )
     .join("");
+
+  renderTeamCalendar(events);
+}
+
+function getMonthEvents(events, monthDate) {
+  return events.filter((event) => {
+    const eventDate = getDateFromValue(event.date);
+    return (
+      eventDate &&
+      eventDate.getFullYear() === monthDate.getFullYear() &&
+      eventDate.getMonth() === monthDate.getMonth()
+    );
+  });
+}
+
+function renderCalendarDay(date, currentMonth, eventsByDate) {
+  const dateKey = [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+  const events = eventsByDate.get(dateKey) || [];
+  const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
+
+  return `
+    <div class="calendar-day${isCurrentMonth ? "" : " is-muted"}${events.length ? " has-games" : ""}">
+      <time datetime="${dateKey}">${date.getDate()}</time>
+      ${
+        events.length
+          ? `<ul>${events
+              .map(
+                (event) => `
+                  <li>
+                    <span>${escapeHtml(getTeamLabel(event))}</span>
+                    <span>${escapeHtml(event.time || "Time TBD")}</span>
+                  </li>
+                `
+              )
+              .join("")}</ul>`
+          : ""
+      }
+    </div>
+  `;
+}
+
+function renderTeamCalendar(events) {
+  if (!teamCalendar || !calendarEmpty || !calendarFrame) return;
+
+  if (!events.length) {
+    teamCalendar.hidden = true;
+    calendarEmpty.hidden = false;
+    return;
+  }
+
+  const firstEventDate = getDateFromValue(events[0].date) || new Date();
+  if (!calendarMonthDate) {
+    calendarMonthDate = new Date(firstEventDate.getFullYear(), firstEventDate.getMonth(), 1);
+  }
+
+  const monthEvents = getMonthEvents(events, calendarMonthDate);
+  const eventsByDate = new Map();
+  monthEvents.forEach((event) => {
+    if (!eventsByDate.has(event.date)) eventsByDate.set(event.date, []);
+    eventsByDate.get(event.date).push(event);
+  });
+
+  const monthStart = new Date(
+    calendarMonthDate.getFullYear(),
+    calendarMonthDate.getMonth(),
+    1
+  );
+  const gridStart = new Date(monthStart);
+  gridStart.setDate(monthStart.getDate() - monthStart.getDay());
+
+  const days = Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(gridStart);
+    date.setDate(gridStart.getDate() + index);
+    return renderCalendarDay(date, calendarMonthDate, eventsByDate);
+  });
+
+  calendarFrame.hidden = true;
+  calendarEmpty.hidden = true;
+  teamCalendar.hidden = false;
+  teamCalendar.innerHTML = `
+    <div class="calendar-toolbar">
+      <button type="button" data-calendar-prev>Prev</button>
+      <h3>${escapeHtml(formatMonthLabel(calendarMonthDate))}</h3>
+      <button type="button" data-calendar-next>Next</button>
+    </div>
+    <div class="calendar-weekdays" aria-hidden="true">
+      <span>Sun</span>
+      <span>Mon</span>
+      <span>Tue</span>
+      <span>Wed</span>
+      <span>Thu</span>
+      <span>Fri</span>
+      <span>Sat</span>
+    </div>
+    <div class="calendar-grid">
+      ${days.join("")}
+    </div>
+  `;
+
+  teamCalendar.querySelector("[data-calendar-prev]")?.addEventListener("click", () => {
+    calendarMonthDate = new Date(
+      calendarMonthDate.getFullYear(),
+      calendarMonthDate.getMonth() - 1,
+      1
+    );
+    renderTeamCalendar(events);
+  });
+
+  teamCalendar.querySelector("[data-calendar-next]")?.addEventListener("click", () => {
+    calendarMonthDate = new Date(
+      calendarMonthDate.getFullYear(),
+      calendarMonthDate.getMonth() + 1,
+      1
+    );
+    renderTeamCalendar(events);
+  });
 }
 
 function renderNextVarsityMatch(match) {
