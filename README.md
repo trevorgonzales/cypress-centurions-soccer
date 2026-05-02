@@ -4,6 +4,14 @@ Static website for Cypress Centurion Boys Soccer, ready for Cloudflare Pages.
 
 Deployment is managed through Cloudflare Pages connected to GitHub.
 
+## Asset Paths
+
+Static assets are served from `https://assets.chsboyssoccer.com` using these folders:
+
+- Images: `https://assets.chsboyssoccer.com/images/[filename]`
+- Videos: `https://assets.chsboyssoccer.com/media/[filename]`
+- Forms: `https://assets.chsboyssoccer.com/forms/[filename]`
+
 ## Cloudflare Pages Settings
 
 - Build command: leave blank
@@ -96,29 +104,34 @@ To change it in Cloudflare without editing code, add a Pages environment variabl
 
 `ROSTER_CSV_URL`
 
-## Google Drive Forms
+## Asset Forms
 
 The Forms page loads files from the Cloudflare Pages Function at `/api/forms`.
-That function lists public files from a Google Drive folder and returns their public links.
 
-Cloudflare Pages environment variable required:
+Preferred setup for automatic discovery:
 
-- `GOOGLE_DRIVE_API_KEY`
+1. Store form files under the `forms/` prefix in the same Cloudflare R2 bucket that backs
+   `https://assets.chsboyssoccer.com`.
+2. Add an R2 bucket binding to the Pages project named `ASSETS_BUCKET` or `FORMS_BUCKET`.
+3. Keep the public asset base at `https://assets.chsboyssoccer.com/forms/`.
 
-Optional override:
+With the bucket binding in place, `/api/forms` lists the `forms/` prefix directly, so new
+files appear on the Forms page after the API cache refreshes.
 
-- `GOOGLE_DRIVE_FORMS_FOLDER_ID`
+Fallback setup if bucket listing is not configured:
 
-Google Drive setup:
+Create `https://assets.chsboyssoccer.com/forms/forms.json` with either an array of filenames:
 
-1. Create a folder named `forms`.
-2. Add the form files to that folder.
-3. Share the folder publicly, or make each file public.
-4. Copy the folder ID from the folder URL.
-5. Create a Google Cloud API key with Drive API enabled.
-6. Add the API key as a Cloudflare Pages environment variable.
+`["tryout-form.pdf", "player-contract.pdf"]`
 
-The default forms folder ID is already set in `functions/api/forms.js`.
+or named entries:
+
+`{"forms":[{"name":"Tryout Form","path":"tryout-form.pdf"}]}`
+
+Optional Cloudflare Pages environment variables:
+
+- `FORMS_PUBLIC_BASE_URL`: defaults to `https://assets.chsboyssoccer.com/forms/`
+- `FORMS_MANIFEST_URL`: defaults to `https://assets.chsboyssoccer.com/forms/forms.json`
 
 ## Contact Form
 

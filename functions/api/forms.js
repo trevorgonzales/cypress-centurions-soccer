@@ -1,65 +1,121 @@
-const DEFAULT_FORMS_FOLDER_ID = "1s9IHeqYyMPdcfXiyHine0BFzlQXKnl8S";
+const DEFAULT_FORMS_BASE_URL = "https://assets.chsboyssoccer.com/forms/";
+const DEFAULT_FORMS_MANIFEST_URL = `${DEFAULT_FORMS_BASE_URL}forms.json`;
+const FORMS_PREFIX = "forms/";
 
-function normalizeDriveFile(file) {
+function getFormsBaseUrl(context) {
+  const baseUrl = context.env.FORMS_PUBLIC_BASE_URL || DEFAULT_FORMS_BASE_URL;
+  return baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+}
+
+function encodePath(path) {
+  return path
+    .split("/")
+    .filter(Boolean)
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+}
+
+function getFormName(path) {
+  const filename = decodeURIComponent(String(path || "").split("/").pop() || "");
+  const withoutExtension = filename.replace(/\.[^.]+$/, "");
+
+  return withoutExtension
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function normalizeFormFile(file, baseUrl = DEFAULT_FORMS_BASE_URL) {
+  const rawPath = typeof file === "string" ? file : file.path || file.key || file.name;
+  if (!rawPath) return null;
+
+  const path = rawPath.startsWith(FORMS_PREFIX)
+    ? rawPath.slice(FORMS_PREFIX.length)
+    : rawPath;
+
+  if (!path || path.endsWith("/") || path === "forms.json") return null;
+
   return {
-    id: file.id,
-    name: file.name,
-    url: file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`,
-    mimeType: file.mimeType,
+    id: path,
+    name: file.title || file.label || getFormName(path),
+    url: file.url || `${baseUrl}${encodePath(path)}`,
+    mimeType: file.mimeType || file.httpMetadata?.contentType || "",
   };
 }
 
-export async function onRequestGet(context) {
-  const apiKey = context.env.GOOGLE_DRIVE_API_KEY;
-  const folderId = context.env.GOOGLE_DRIVE_FORMS_FOLDER_ID || DEFAULT_FORMS_FOLDER_ID;
+async function listBucketForms(bucket, baseUrl) {
+  const forms = [];
+  let cursor = undefined;
 
-  if (!apiKey) {
+  do {
+    const result = await bucket.list({
+      prefix: FORMS_PREFIX,
+      cursor,
+    });
+
+    (result.objects || []).forEach((object) => {
+      const form = normalizeFormFile(object, baseUrl);
+      if (form) forms.push(form);
+    });
+
+    cursor = result.truncated ? result.cursor : undefined;
+  } while (cursor);
+
+  return forms.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+async function fetchManifestForms(manifestUrl, baseUrl) {
+  const response = await fetch(manifestUrl, {
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
     return Response.json(
-      {
-        error: "Google Drive forms integration is not configured.",
-        forms: [],
-      },
-      { status: 503 }
+      { error: "Unable to fetch forms manifest.", forms: [] },
+      { status: 502 }
     );
   }
 
-  const params = new URLSearchParams({
-    key: apiKey,
-    q: `'${folderId}' in parents and trashed = false`,
-    fields: "files(id,name,mimeType,webViewLink,modifiedTime)",
-    orderBy: "name",
-    supportsAllDrives: "true",
-    includeItemsFromAllDrives: "true",
-  });
+  const data = await response.json();
+  const entries = Array.isArray(data) ? data : data.forms || [];
+  const forms = entries
+    .map((entry) => normalizeFormFile(entry, baseUrl))
+    .filter(Boolean)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  return Response.json(
+    { forms, source: "manifest" },
+    {
+      headers: {
+        "Cache-Control": "public, max-age=300",
+      },
+    }
+  );
+}
+
+export async function onRequestGet(context) {
+  const baseUrl = getFormsBaseUrl(context);
+  const bucket = context.env.FORMS_BUCKET || context.env.ASSETS_BUCKET;
+  const manifestUrl = context.env.FORMS_MANIFEST_URL || DEFAULT_FORMS_MANIFEST_URL;
 
   try {
-    const response = await fetch(
-      `https://www.googleapis.com/drive/v3/files?${params.toString()}`,
-      {
-        headers: {
-          Accept: "application/json",
-        },
-      }
-    );
+    if (bucket?.list) {
+      const forms = await listBucketForms(bucket, baseUrl);
 
-    if (!response.ok) {
       return Response.json(
-        { error: "Unable to fetch forms.", forms: [] },
-        { status: 502 }
+        { forms, source: "bucket" },
+        {
+          headers: {
+            "Cache-Control": "public, max-age=300",
+          },
+        }
       );
     }
 
-    const data = await response.json();
-    const forms = (data.files || []).map(normalizeDriveFile);
-
-    return Response.json(
-      { forms },
-      {
-        headers: {
-          "Cache-Control": "public, max-age=300",
-        },
-      }
-    );
+    return fetchManifestForms(manifestUrl, baseUrl);
   } catch (error) {
     return Response.json(
       { error: "Unable to load forms.", forms: [] },
