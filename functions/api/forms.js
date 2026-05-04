@@ -96,9 +96,22 @@ async function fetchManifestForms(manifestUrl, baseUrl) {
   );
 }
 
+function getConfiguredForms(value, baseUrl) {
+  if (!value) return null;
+
+  const forms = value
+    .split(/\r?\n|,/)
+    .map((path) => normalizeFormFile(path.trim(), baseUrl))
+    .filter(Boolean)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  return forms;
+}
+
 export async function onRequestGet(context) {
   const baseUrl = getFormsBaseUrl(context);
   const bucket = context.env.FORMS_BUCKET || context.env.ASSETS_BUCKET;
+  const configuredForms = getConfiguredForms(context.env.FORMS_FILES, baseUrl);
   const manifestUrl = context.env.FORMS_MANIFEST_URL || DEFAULT_FORMS_MANIFEST_URL;
 
   try {
@@ -107,6 +120,17 @@ export async function onRequestGet(context) {
 
       return Response.json(
         { forms, source: "bucket" },
+        {
+          headers: {
+            "Cache-Control": "public, max-age=300",
+          },
+        }
+      );
+    }
+
+    if (configuredForms) {
+      return Response.json(
+        { forms: configuredForms, source: "env" },
         {
           headers: {
             "Cache-Control": "public, max-age=300",

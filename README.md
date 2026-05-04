@@ -120,6 +120,19 @@ files appear on the Forms page after the API cache refreshes.
 
 Fallback setup if bucket listing is not configured:
 
+Add a Cloudflare Pages environment variable named `FORMS_FILES` with one filename per line
+or a comma-separated list:
+
+`Physical Form.pdf`
+
+or:
+
+`Physical Form.pdf,Player Contract.pdf`
+
+The generated URLs will use `https://assets.chsboyssoccer.com/forms/[filename]`.
+
+Alternative manifest fallback:
+
 Create `https://assets.chsboyssoccer.com/forms/forms.json` with either an array of filenames:
 
 `["tryout-form.pdf", "player-contract.pdf"]`
@@ -130,6 +143,7 @@ or named entries:
 
 Optional Cloudflare Pages environment variables:
 
+- `FORMS_FILES`: fallback list of form filenames when bucket listing is not configured
 - `FORMS_PUBLIC_BASE_URL`: defaults to `https://assets.chsboyssoccer.com/forms/`
 - `FORMS_MANIFEST_URL`: defaults to `https://assets.chsboyssoccer.com/forms/forms.json`
 
