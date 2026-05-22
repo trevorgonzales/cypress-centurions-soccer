@@ -30,11 +30,16 @@ const galleryLightboxClose = document.querySelector("[data-gallery-lightbox-clos
 const contactForm = document.querySelector("[data-contact-form]");
 const contactStatus = document.querySelector("[data-contact-status]");
 const turnstileContainer = document.querySelector("[data-turnstile-container]");
+const copyrightYears = document.querySelectorAll("[data-current-year]");
 let turnstileWidgetId = null;
 const transparentPixel =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 const upcomingGameCardLimit = 2;
 let calendarMonthDate = null;
+
+copyrightYears.forEach((year) => {
+  year.textContent = String(new Date().getFullYear());
+});
 
 function syncMotionPreference() {
   if (!heroVideo) return;
