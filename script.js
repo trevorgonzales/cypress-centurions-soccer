@@ -15,8 +15,18 @@ const nextMatchCard = document.querySelector("[data-next-match]");
 const nextMatchLogo = document.querySelector("[data-next-match-logo]");
 const nextMatchDate = document.querySelector("[data-next-match-date]");
 const nextMatchLocation = document.querySelector("[data-next-match-location]");
+const instagramFeed = document.querySelector("[data-instagram-feed]");
 const formsList = document.querySelector("[data-forms-list]");
 const formsStatus = document.querySelector("[data-forms-status]");
+const galleryList = document.querySelector("[data-gallery-list]");
+const galleryStatus = document.querySelector("[data-gallery-status]");
+const galleryDetail = document.querySelector("[data-gallery-detail]");
+const galleryDetailTitle = document.querySelector("[data-gallery-detail-title]");
+const galleryDetailCaption = document.querySelector("[data-gallery-detail-caption]");
+const galleryDetailStatus = document.querySelector("[data-gallery-detail-status]");
+const galleryLightbox = document.querySelector("[data-gallery-lightbox]");
+const galleryLightboxImage = document.querySelector("[data-gallery-lightbox-image]");
+const galleryLightboxClose = document.querySelector("[data-gallery-lightbox-close]");
 const contactForm = document.querySelector("[data-contact-form]");
 const contactStatus = document.querySelector("[data-contact-status]");
 const turnstileContainer = document.querySelector("[data-turnstile-container]");
@@ -165,6 +175,216 @@ function renderForms(forms) {
     .join("");
 }
 
+function truncateText(value, limit = 120) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  return text.length > limit ? `${text.slice(0, limit - 1).trim()}...` : text;
+}
+
+function renderInstagramPosts(posts) {
+  if (!instagramFeed) return;
+
+  if (!posts.length) {
+    instagramFeed.innerHTML = `
+      <div class="instagram-empty">
+        <p>Instagram posts will appear here soon.</p>
+      </div>
+    `;
+    return;
+  }
+
+  instagramFeed.innerHTML = posts
+    .map(
+      (post) => `
+        <a class="instagram-card" href="${escapeHtml(post.permalink)}" target="_blank" rel="noopener">
+          <img src="${escapeHtml(post.imageUrl)}" alt="${escapeHtml(truncateText(post.caption, 90) || "Instagram post")}">
+          <span>${escapeHtml(truncateText(post.caption) || "View on Instagram")}</span>
+        </a>
+      `
+    )
+    .join("");
+}
+
+function showGalleryIssue(message) {
+  if (!galleryStatus) return;
+
+  galleryStatus.hidden = false;
+  galleryStatus.innerHTML = `<p>${escapeHtml(message)}</p>`;
+}
+
+function showGalleryDetailIssue(message) {
+  if (!galleryDetailStatus) return;
+
+  galleryDetailStatus.hidden = false;
+  galleryDetailStatus.innerHTML = `<p>${escapeHtml(message)}</p>`;
+}
+
+function renderGalleryCollections(galleries) {
+  if (!galleryList) return;
+
+  if (!galleries.length) {
+    galleryList.innerHTML = `
+      <article class="gallery-empty">
+        <p>Gallery collections will appear here soon.</p>
+      </article>
+    `;
+    return;
+  }
+
+  galleryList.innerHTML = galleries
+    .map((gallery) => {
+      const title = gallery.title || gallery.category || "Cypress Boys Soccer";
+      const caption = gallery.caption || gallery.category || "";
+      const href = `gallery-detail.html?id=${encodeURIComponent(gallery.id)}`;
+
+      return `
+        <a class="gallery-card gallery-collection-card" href="${escapeHtml(href)}">
+          <img src="${escapeHtml(gallery.coverImageUrl)}" alt="${escapeHtml(title)}" loading="lazy">
+          <span class="gallery-card-copy">
+            <h2>${escapeHtml(title)}</h2>
+            ${caption ? `<p>${escapeHtml(caption)}</p>` : ""}
+            <span class="gallery-photo-count">${Number(gallery.photoCount || 0)} photos</span>
+          </span>
+        </a>
+      `;
+    })
+    .join("");
+}
+
+function getSelectedGalleryId() {
+  return new URLSearchParams(window.location.search).get("id") || "";
+}
+
+function openGalleryLightbox(imageUrl, altText) {
+  if (!galleryLightbox || !galleryLightboxImage) return;
+
+  galleryLightboxImage.src = imageUrl;
+  galleryLightboxImage.alt = altText;
+  galleryLightbox.hidden = false;
+  document.body.classList.add("has-gallery-lightbox");
+  galleryLightboxClose?.focus();
+}
+
+function closeGalleryLightbox() {
+  if (!galleryLightbox || !galleryLightboxImage) return;
+
+  galleryLightbox.hidden = true;
+  galleryLightboxImage.src = "";
+  galleryLightboxImage.alt = "";
+  document.body.classList.remove("has-gallery-lightbox");
+}
+
+function setupGalleryLightbox() {
+  if (!galleryLightbox) return;
+
+  galleryLightbox.addEventListener("click", (event) => {
+    if (
+      event.target === galleryLightbox ||
+      event.target === galleryLightboxClose
+    ) {
+      closeGalleryLightbox();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !galleryLightbox.hidden) {
+      closeGalleryLightbox();
+    }
+  });
+}
+
+function renderGalleryDetail(gallery) {
+  if (!galleryDetail) return;
+
+  if (!gallery) {
+    galleryDetail.innerHTML = `
+      <article class="gallery-empty">
+        <p>Gallery collection not found.</p>
+      </article>
+    `;
+    return;
+  }
+
+  if (galleryDetailTitle) galleryDetailTitle.textContent = gallery.title;
+  if (galleryDetailCaption) {
+    galleryDetailCaption.textContent =
+      gallery.caption || "Images created by AM8 Media - Angel Martinez.";
+  }
+  document.title = `${gallery.title} | Cypress High Soccer`;
+
+  galleryDetail.innerHTML = gallery.photos
+    .map((photo) => {
+      const alt = photo.alt || gallery.title;
+
+      return `
+        <button class="gallery-photo-card" type="button" data-full-image="${escapeHtml(photo.imageUrl)}" data-alt="${escapeHtml(alt)}">
+          <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(alt)}" loading="lazy">
+        </button>
+      `;
+    })
+    .join("");
+
+  galleryDetail.querySelectorAll(".gallery-photo-card").forEach((button) => {
+    button.addEventListener("click", () => {
+      openGalleryLightbox(button.dataset.fullImage || "", button.dataset.alt || "");
+    });
+  });
+}
+
+async function loadGallery() {
+  if (!galleryList?.dataset.galleryApi) return;
+  if (window.location.protocol === "file:") return;
+
+  try {
+    const response = await fetch(galleryList.dataset.galleryApi);
+    if (!response.ok) throw new Error("Gallery request failed.");
+
+    const data = await response.json();
+    renderGalleryCollections(data.galleries || []);
+  } catch (error) {
+    showGalleryIssue("Gallery photos are temporarily unavailable. We are working on fixing it.");
+  }
+}
+
+async function loadGalleryDetail() {
+  if (!galleryDetail?.dataset.galleryApi) return;
+  if (window.location.protocol === "file:") return;
+
+  const selectedGalleryId = getSelectedGalleryId();
+  if (!selectedGalleryId) {
+    renderGalleryDetail(null);
+    return;
+  }
+
+  try {
+    const response = await fetch(galleryDetail.dataset.galleryApi);
+    if (!response.ok) throw new Error("Gallery request failed.");
+
+    const data = await response.json();
+    const gallery = (data.galleries || []).find(
+      (item) => item.id === selectedGalleryId
+    );
+
+    renderGalleryDetail(gallery);
+  } catch (error) {
+    showGalleryDetailIssue("Gallery photos are temporarily unavailable. We are working on fixing it.");
+  }
+}
+
+async function loadInstagramFeed() {
+  if (!instagramFeed?.dataset.instagramApi) return;
+  if (window.location.protocol === "file:") return;
+
+  try {
+    const response = await fetch(instagramFeed.dataset.instagramApi);
+    if (!response.ok) throw new Error("Instagram request failed.");
+
+    const data = await response.json();
+    renderInstagramPosts(data.posts || []);
+  } catch (error) {
+    renderInstagramPosts([]);
+  }
+}
+
 async function loadForms() {
   if (!formsList?.dataset.formsApi) return;
   if (window.location.protocol === "file:") return;
@@ -200,6 +420,10 @@ async function loadRoster() {
 rosterToggles.forEach((toggle) => setupRosterToggle(toggle));
 loadRoster();
 loadForms();
+setupGalleryLightbox();
+loadGallery();
+loadGalleryDetail();
+loadInstagramFeed();
 
 function formatGameDate(dateValue) {
   const date = new Date(`${dateValue}T00:00:00`);
