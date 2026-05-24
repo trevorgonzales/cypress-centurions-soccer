@@ -1,5 +1,7 @@
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const siteHeader = document.querySelector(".site-header");
 const heroVideo = document.querySelector(".hero-video");
+const heroSection = document.querySelector(".hero");
 const matchSection = document.querySelector(".match-section");
 const menuToggle = document.querySelector(".menu-toggle");
 const mainNav = document.querySelector(".main-nav");
@@ -40,6 +42,32 @@ let calendarMonthDate = null;
 copyrightYears.forEach((year) => {
   year.textContent = String(new Date().getFullYear());
 });
+
+function isLocalStaticPreview() {
+  return ["localhost", "127.0.0.1"].includes(window.location.hostname);
+}
+
+function getLocalPreviewNextMatch() {
+  return {
+    date: "2026-11-18",
+    opponent: "Edison HS",
+    time: "5:00 PM",
+    location: "Edison",
+    logo: "https://assets.chsboyssoccer.com/images/edison-hs.png",
+  };
+}
+
+async function fetchScheduleData(apiUrl = "/api/schedule") {
+  const response = await fetch(apiUrl);
+  if (response.ok) return response.json();
+
+  if (isLocalStaticPreview() && apiUrl.startsWith("/")) {
+    const liveResponse = await fetch(`https://www.chsboyssoccer.com${apiUrl}`);
+    if (liveResponse.ok) return liveResponse.json();
+  }
+
+  throw new Error("Schedule request failed.");
+}
 
 function syncMotionPreference() {
   if (!heroVideo) return;
@@ -91,6 +119,7 @@ if (matchSection) {
 if (menuToggle && mainNav) {
   menuToggle.addEventListener("click", () => {
     const isOpen = mainNav.classList.toggle("is-open");
+    document.body.classList.toggle("is-nav-open", isOpen);
     menuToggle.setAttribute("aria-expanded", String(isOpen));
     menuToggle.setAttribute(
       "aria-label",
@@ -101,11 +130,28 @@ if (menuToggle && mainNav) {
   mainNav.addEventListener("click", (event) => {
     if (event.target instanceof HTMLAnchorElement) {
       mainNav.classList.remove("is-open");
+      document.body.classList.remove("is-nav-open");
       menuToggle.setAttribute("aria-expanded", "false");
       menuToggle.setAttribute("aria-label", "Open navigation menu");
     }
   });
 }
+
+function syncHeaderState() {
+  if (!siteHeader || !document.body.classList.contains("has-hero-header")) return;
+
+  const heroBottom = heroSection
+    ? heroSection.offsetTop + heroSection.offsetHeight
+    : 0;
+  const headerHeight = siteHeader.offsetHeight;
+  const isPastHero = window.scrollY >= Math.max(0, heroBottom - headerHeight);
+
+  siteHeader.classList.toggle("is-past-hero", isPastHero);
+}
+
+syncHeaderState();
+window.addEventListener("scroll", syncHeaderState, { passive: true });
+window.addEventListener("resize", syncHeaderState);
 
 function showRosterIssue() {
   if (!rosterStatus) return;
@@ -910,12 +956,9 @@ async function renderSchedule() {
 
   if (schedule.scheduleApiUrl) {
     try {
-      const response = await fetch(schedule.scheduleApiUrl);
-      if (response.ok) {
-        const data = await response.json();
-        renderScheduleCards(data.events || []);
-        return;
-      }
+      const data = await fetchScheduleData(schedule.scheduleApiUrl);
+      renderScheduleCards(data.events || []);
+      return;
     } catch (error) {
       // Local file previews cannot call Cloudflare Pages Functions.
     }
@@ -930,16 +973,12 @@ async function loadNextMatch() {
   if (!nextMatchCard || window.location.protocol === "file:") return;
 
   try {
-    const response = await fetch("/api/schedule");
-    if (!response.ok) {
-      renderNextVarsityMatch(null);
-      return;
-    }
-
-    const data = await response.json();
+    const data = await fetchScheduleData("/api/schedule");
     renderNextVarsityMatch(data.nextVarsityMatch);
   } catch (error) {
-    renderNextVarsityMatch(null);
+    renderNextVarsityMatch(
+      isLocalStaticPreview() ? getLocalPreviewNextMatch() : null
+    );
   }
 }
 

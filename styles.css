@@ -67,10 +67,28 @@ button:focus-visible {
 }
 
 .site-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 10;
   background: var(--navy);
+  transition:
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.has-hero-header .site-header {
+  background: transparent;
+}
+
+.has-hero-header .site-header.is-past-hero,
+.has-hero-header.is-nav-open .site-header {
+  background: var(--navy);
+}
+
+body:not(.has-hero-header) main {
+  padding-top: 91px;
 }
 
 .header-inner {
@@ -116,24 +134,26 @@ button:focus-visible {
 }
 
 .main-nav {
-  position: absolute;
-  left: 0;
+  position: fixed;
+  top: 0;
   right: 0;
-  top: 100%;
-  width: 100%;
+  width: min(82vw, 340px);
+  min-height: 100vh;
   display: flex;
-  max-height: 0;
-  overflow: hidden;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0;
+  padding: 96px 0 28px;
   background: var(--navy);
+  box-shadow: -18px 0 36px rgba(0, 0, 0, 0.28);
   color: var(--white);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 1px;
-  transition: max-height 220ms ease;
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 220ms ease;
 }
 
 .main-nav a {
@@ -151,7 +171,7 @@ button:focus-visible {
 }
 
 .main-nav.is-open {
-  max-height: 260px;
+  transform: translateX(0);
 }
 
 .menu-toggle {
@@ -164,6 +184,7 @@ button:focus-visible {
   background: transparent;
   color: var(--white);
   cursor: pointer;
+  z-index: 11;
 }
 
 .menu-toggle span {
@@ -1487,6 +1508,10 @@ button:focus-visible {
 }
 
 @media (min-width: 720px) {
+  body:not(.has-hero-header) main {
+    padding-top: 103px;
+  }
+
   .header-inner {
     min-height: 103px;
     flex-direction: row;
@@ -1514,13 +1539,17 @@ button:focus-visible {
   .main-nav {
     position: static;
     width: auto;
+    min-height: auto;
     max-height: none;
+    padding: 0;
     overflow: visible;
     flex-direction: row;
     flex-wrap: nowrap;
     gap: 40px;
     background: transparent;
+    box-shadow: none;
     font-size: 13px;
+    transform: none;
   }
 
   .main-nav a {
