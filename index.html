@@ -8,8 +8,8 @@
       content="Cypress Centurion Boys Soccer official team website."
     >
     <title>Home | Cypress High Soccer</title>
-    <link rel="stylesheet" href="styles.css?v=20260522-header2">
-    <script src="script.js?v=20260522-header2" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20260524-countdown">
+    <script src="script.js?v=20260524-countdown" defer></script>
   </head>
   <body class="has-hero-header">
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -91,7 +91,31 @@
       </section>
 
       <section id="team" class="match-section">
-        <h2>Upcoming Match</h2>
+        <div class="match-countdown" data-match-countdown hidden>
+          <p class="countdown-kicker">Upcoming Match</p>
+          <div class="countdown-grid" aria-live="polite">
+            <div class="countdown-unit" data-countdown-unit="months">
+              <span data-countdown-months>0</span>
+              <small>Months</small>
+            </div>
+            <div class="countdown-unit" data-countdown-unit="days">
+              <span data-countdown-days>0</span>
+              <small>Days</small>
+            </div>
+            <div class="countdown-unit">
+              <span data-countdown-hours>0</span>
+              <small>Hours</small>
+            </div>
+            <div class="countdown-unit">
+              <span data-countdown-minutes>0</span>
+              <small>Minutes</small>
+            </div>
+            <div class="countdown-unit">
+              <span data-countdown-seconds>0</span>
+              <small>Seconds</small>
+            </div>
+          </div>
+        </div>
         <div
           class="match-card is-loading"
           aria-label="Upcoming match loading from the team calendar"

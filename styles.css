@@ -290,6 +290,64 @@ body:not(.has-hero-header) main {
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
 }
 
+.match-countdown {
+  width: min(760px, 100%);
+  margin: 0 auto 26px;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  border-top: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: center;
+}
+
+.countdown-kicker {
+  margin: 0;
+  color: var(--orange);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+}
+
+.countdown-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(68px, 1fr));
+  gap: 0;
+}
+
+.countdown-unit {
+  min-height: 62px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 3px;
+  border-right: 1px solid rgba(8, 37, 66, 0.16);
+  background: transparent;
+}
+
+.countdown-unit:last-child {
+  border-right: 0;
+}
+
+.countdown-unit span {
+  color: var(--navy);
+  font-size: clamp(28px, 8vw, 44px);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.countdown-unit small {
+  color: #555;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
 .sponsors {
   order: 10;
   background: var(--dark-strip);

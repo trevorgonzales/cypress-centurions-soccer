@@ -17,6 +17,13 @@ const nextMatchCard = document.querySelector("[data-next-match]");
 const nextMatchLogo = document.querySelector("[data-next-match-logo]");
 const nextMatchDate = document.querySelector("[data-next-match-date]");
 const nextMatchLocation = document.querySelector("[data-next-match-location]");
+const countdownSection = document.querySelector("[data-match-countdown]");
+const countdownTitle = document.querySelector("[data-countdown-title]");
+const countdownMonths = document.querySelector("[data-countdown-months]");
+const countdownDays = document.querySelector("[data-countdown-days]");
+const countdownHours = document.querySelector("[data-countdown-hours]");
+const countdownMinutes = document.querySelector("[data-countdown-minutes]");
+const countdownSeconds = document.querySelector("[data-countdown-seconds]");
 const instagramFeed = document.querySelector("[data-instagram-feed]");
 const formsList = document.querySelector("[data-forms-list]");
 const formsStatus = document.querySelector("[data-forms-status]");
@@ -34,6 +41,9 @@ const contactStatus = document.querySelector("[data-contact-status]");
 const turnstileContainer = document.querySelector("[data-turnstile-container]");
 const copyrightYears = document.querySelectorAll("[data-current-year]");
 let turnstileWidgetId = null;
+let countdownTimerId = null;
+let countdownMatches = [];
+let activeCountdownMatch = null;
 const transparentPixel =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 const upcomingGameCardLimit = 2;
@@ -55,6 +65,134 @@ function getLocalPreviewNextMatch() {
     location: "Edison",
     logo: "https://assets.chsboyssoccer.com/images/edison-hs.png",
   };
+}
+
+function isVarsityScheduleEvent(event) {
+  const team = String(event?.team || "").trim();
+  if (team) return /^varsity$/i.test(team);
+
+  const summary = String(event?.summary || "");
+  return (
+    /\bVarsity\b/i.test(summary) &&
+    !/\b(Jr\.?|Junior|JV)\s*Varsity\b/i.test(summary)
+  );
+}
+
+function parseMatchDateTime(match) {
+  if (!match?.date) return null;
+
+  const dateMatch = String(match.date).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!dateMatch) return null;
+
+  let hour = 12;
+  let minute = 0;
+  const timeMatch = String(match.time || "").match(
+    /^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/i
+  );
+
+  if (timeMatch) {
+    hour = Number(timeMatch[1]);
+    minute = Number(timeMatch[2] || 0);
+    const period = timeMatch[3].toUpperCase();
+
+    if (period === "PM" && hour < 12) hour += 12;
+    if (period === "AM" && hour === 12) hour = 0;
+  }
+
+  return new Date(
+    Number(dateMatch[1]),
+    Number(dateMatch[2]) - 1,
+    Number(dateMatch[3]),
+    hour,
+    minute
+  );
+}
+
+function normalizeCountdownMatch(match) {
+  if (!match) return null;
+  const targetDate = parseMatchDateTime(match);
+  if (!targetDate) return null;
+
+  return {
+    ...match,
+    targetDate,
+  };
+}
+
+function getUpcomingCountdownMatch(matches) {
+  const now = new Date();
+
+  return matches
+    .map(normalizeCountdownMatch)
+    .filter((match) => match && match.targetDate > now)
+    .sort((a, b) => a.targetDate - b.targetDate)[0] || null;
+}
+
+function getCountdownParts(targetDate) {
+  const now = new Date();
+  let months = 0;
+  let monthCursor = new Date(now);
+
+  while (true) {
+    const nextMonth = new Date(monthCursor);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    if (nextMonth > targetDate) break;
+    months += 1;
+    monthCursor = nextMonth;
+  }
+
+  const remainingMs = Math.max(0, targetDate - monthCursor);
+  const totalSeconds = Math.floor(remainingMs / 1000);
+  const days = Math.floor(totalSeconds / (60 * 60 * 24));
+  const hours = Math.floor((totalSeconds - days * 60 * 60 * 24) / (60 * 60));
+  const minutes = Math.floor((totalSeconds - days * 60 * 60 * 24 - hours * 60 * 60) / 60);
+  const seconds = totalSeconds % 60;
+
+  return { months, days, hours, minutes, seconds };
+}
+
+function renderCountdown(match) {
+  if (!countdownSection) return;
+
+  if (!match) {
+    countdownSection.hidden = true;
+    return;
+  }
+
+  const parts = getCountdownParts(match.targetDate);
+  const monthUnit = document.querySelector('[data-countdown-unit="months"]');
+  const dayUnit = document.querySelector('[data-countdown-unit="days"]');
+  const titleParts = ["Cypress"];
+
+  if (match.opponent) titleParts.push("vs", match.opponent);
+  if (countdownTitle) countdownTitle.textContent = titleParts.join(" ");
+  if (countdownMonths) countdownMonths.textContent = String(parts.months);
+  if (countdownDays) countdownDays.textContent = String(parts.days);
+  if (countdownHours) countdownHours.textContent = String(parts.hours);
+  if (countdownMinutes) countdownMinutes.textContent = String(parts.minutes);
+  if (countdownSeconds) countdownSeconds.textContent = String(parts.seconds);
+
+  if (monthUnit) monthUnit.hidden = parts.months < 1;
+  if (dayUnit) dayUnit.hidden = parts.months < 1 && parts.days < 1;
+  countdownSection.hidden = false;
+}
+
+function startCountdown(matches) {
+  if (!countdownSection) return;
+
+  countdownMatches = matches;
+  activeCountdownMatch = getUpcomingCountdownMatch(countdownMatches);
+
+  if (countdownTimerId) window.clearInterval(countdownTimerId);
+  renderCountdown(activeCountdownMatch);
+
+  countdownTimerId = window.setInterval(() => {
+    if (!activeCountdownMatch || activeCountdownMatch.targetDate <= new Date()) {
+      activeCountdownMatch = getUpcomingCountdownMatch(countdownMatches);
+    }
+
+    renderCountdown(activeCountdownMatch);
+  }, 1000);
 }
 
 async function fetchScheduleData(apiUrl = "/api/schedule") {
@@ -974,11 +1112,17 @@ async function loadNextMatch() {
 
   try {
     const data = await fetchScheduleData("/api/schedule");
-    renderNextVarsityMatch(data.nextVarsityMatch);
+    const varsityMatches = (data.events || []).filter(isVarsityScheduleEvent);
+    const countdownMatch =
+      getUpcomingCountdownMatch(varsityMatches) ||
+      normalizeCountdownMatch(data.nextVarsityMatch);
+
+    renderNextVarsityMatch(countdownMatch || data.nextVarsityMatch);
+    startCountdown(countdownMatch ? varsityMatches : [data.nextVarsityMatch]);
   } catch (error) {
-    renderNextVarsityMatch(
-      isLocalStaticPreview() ? getLocalPreviewNextMatch() : null
-    );
+    const fallbackMatch = isLocalStaticPreview() ? getLocalPreviewNextMatch() : null;
+    renderNextVarsityMatch(fallbackMatch);
+    startCountdown(fallbackMatch ? [fallbackMatch] : []);
   }
 }
 
