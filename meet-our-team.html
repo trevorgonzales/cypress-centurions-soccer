@@ -2,14 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="theme-color" content="#081e32">
+    <link rel="icon" type="image/png" href="https://assets.chsboyssoccer.com/images/Cypress_High_School_40th_Anniversary_Logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
       content="Meet the Cypress Centurion Boys Soccer varsity, junior varsity, and fresh/soph teams."
     >
     <title>Meet Our Team | Cypress High Soccer</title>
-    <link rel="stylesheet" href="styles.css?v=20261012-match-spacing">
-    <script src="script.js?v=20260524-countdown" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20261012-redesign">
+    <script src="script.js?v=20261012-redesign" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -17,6 +19,7 @@
       <div class="header-inner">
         <a class="brand" href="index.html#home" aria-label="Cypress Centurion Boys Soccer home">
           <img
+            width="64" height="68"
             class="brand-logo"
             src="https://assets.chsboyssoccer.com/images/Cypress_High_School_40th_Anniversary_Logo.png"
             alt="Cypress High School logo"
@@ -41,7 +44,7 @@
 
         <nav id="primary-navigation" class="main-nav" aria-label="Primary navigation">
           <a href="index.html#home">Home</a>
-          <a class="active" href="meet-our-team.html">Team</a>
+          <a class="active" aria-current="page" href="meet-our-team.html">Team</a>
           <a href="schedule.html">Schedule</a>
           <a href="forms.html">Forms</a>
           <a href="gallery.html">Gallery</a>
@@ -50,8 +53,9 @@
       </div>
     </header>
 
-    <main id="main-content" class="team-page">
+    <main id="main-content" tabindex="-1" class="team-page">
       <section class="roster-section" aria-labelledby="team-title">
+        <p class="eyebrow">CYPRESS CENTURION / BOYS SOCCER</p>
         <h1 id="team-title">Meet Our Team</h1>
 
         <div class="roster-status" data-roster-status hidden></div>
@@ -148,6 +152,17 @@
     </main>
 
     <footer class="site-footer">
+      <div class="footer-identity">
+        <strong>CYPRESS CENTURION</strong>
+        <span>Boys Soccer</span>
+      </div>
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <a href="meet-our-team.html">Team</a>
+        <a href="schedule.html">Schedule</a>
+        <a href="forms.html">Forms</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="contact.html">Contact</a>
+      </nav>
       <div class="social-links" aria-label="Social links">
         <a href="https://www.instagram.com/cypress_centurion_boys_soccer/" target="_blank" rel="noopener" aria-label="Instagram">
           <svg viewBox="0 0 24 24" aria-hidden="true">

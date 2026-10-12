@@ -1,8 +1,6 @@
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-const siteHeader = document.querySelector(".site-header");
 const heroVideo = document.querySelector(".hero-video");
-const heroSection = document.querySelector(".hero");
-const matchSection = document.querySelector(".match-section");
+const heroVideoToggle = document.querySelector("[data-video-toggle]");
 const menuToggle = document.querySelector(".menu-toggle");
 const mainNav = document.querySelector(".main-nav");
 const rosterToggles = document.querySelectorAll(".roster-toggle");
@@ -48,6 +46,9 @@ const transparentPixel =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 const upcomingGameCardLimit = 2;
 let calendarMonthDate = null;
+let lightboxTrigger = null;
+let videoIsVisible = true;
+let videoIsPaused = Boolean(reduceMotion.matches || navigator.connection?.saveData);
 
 copyrightYears.forEach((year) => {
   year.textContent = String(new Date().getFullYear());
@@ -187,6 +188,7 @@ function startCountdown(matches) {
   renderCountdown(activeCountdownMatch);
 
   countdownTimerId = window.setInterval(() => {
+    if (document.hidden) return;
     if (!activeCountdownMatch || activeCountdownMatch.targetDate <= new Date()) {
       activeCountdownMatch = getUpcomingCountdownMatch(countdownMatches);
     }
@@ -209,87 +211,92 @@ async function fetchScheduleData(apiUrl = "/api/schedule") {
 
 function syncMotionPreference() {
   if (!heroVideo) return;
-
-  if (reduceMotion.matches) {
+  if (videoIsPaused || !videoIsVisible || document.hidden) {
     heroVideo.pause();
-    heroVideo.removeAttribute("autoplay");
   } else {
-    heroVideo.play().catch(() => {});
+    heroVideo.play().catch((error) => {
+      if (error.name === "AbortError" || !videoIsVisible || document.hidden || videoIsPaused) return;
+      videoIsPaused = true;
+      syncMotionPreference();
+    });
+  }
+  if (heroVideoToggle) {
+    heroVideoToggle.textContent = videoIsPaused ? "Play video" : "Pause video";
+    heroVideoToggle.setAttribute("aria-label", videoIsPaused ? "Play background video" : "Pause background video");
   }
 }
 
 syncMotionPreference();
 
-if (typeof reduceMotion.addEventListener === "function") {
-  reduceMotion.addEventListener("change", syncMotionPreference);
-} else {
-  reduceMotion.addListener(syncMotionPreference);
-}
-
-function revealMatchLogos() {
-  if (!matchSection) return;
-  matchSection.classList.add("is-visible");
-}
-
-if (matchSection) {
-  if (reduceMotion.matches || !("IntersectionObserver" in window)) {
-    revealMatchLogos();
+if (heroVideo) {
+  const updateMotionPreference = () => {
+    videoIsPaused = Boolean(reduceMotion.matches || navigator.connection?.saveData);
+    syncMotionPreference();
+  };
+  if (typeof reduceMotion.addEventListener === "function") {
+    reduceMotion.addEventListener("change", updateMotionPreference);
   } else {
-    const matchObserver = new IntersectionObserver(
-      (entries, observer) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            revealMatchLogos();
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      {
-        rootMargin: "0px 0px -18% 0px",
-        threshold: 0.35,
-      }
-    );
-
-    matchObserver.observe(matchSection);
+    reduceMotion.addListener(updateMotionPreference);
+  }
+  heroVideoToggle?.addEventListener("click", () => {
+    videoIsPaused = !videoIsPaused;
+    syncMotionPreference();
+  });
+  document.addEventListener("visibilitychange", syncMotionPreference);
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(([entry]) => {
+      videoIsVisible = entry.isIntersecting;
+      syncMotionPreference();
+    }).observe(heroVideo);
   }
 }
 
 if (menuToggle && mainNav) {
-  menuToggle.addEventListener("click", () => {
-    const isOpen = mainNav.classList.toggle("is-open");
+  const mobileNavigation = window.matchMedia("(max-width: 999px)");
+  const pageRegions = document.querySelectorAll("body > main, body > footer, body > .sponsors");
+  const setMenuOpen = (isOpen, restoreFocus = false) => {
+    mainNav.classList.toggle("is-open", isOpen);
     document.body.classList.toggle("is-nav-open", isOpen);
+    mainNav.inert = mobileNavigation.matches && !isOpen;
+    const dialogIsOpen = galleryLightbox && !galleryLightbox.hidden;
+    pageRegions.forEach((region) => { region.inert = isOpen || Boolean(dialogIsOpen); });
     menuToggle.setAttribute("aria-expanded", String(isOpen));
-    menuToggle.setAttribute(
-      "aria-label",
-      isOpen ? "Close navigation menu" : "Open navigation menu"
-    );
+    menuToggle.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
+    if (restoreFocus) menuToggle.focus();
+  };
+  setMenuOpen(false);
+  menuToggle.addEventListener("click", () => {
+    setMenuOpen(!mainNav.classList.contains("is-open"));
   });
-
   mainNav.addEventListener("click", (event) => {
-    if (event.target instanceof HTMLAnchorElement) {
-      mainNav.classList.remove("is-open");
-      document.body.classList.remove("is-nav-open");
-      menuToggle.setAttribute("aria-expanded", "false");
-      menuToggle.setAttribute("aria-label", "Open navigation menu");
+    if (event.target.closest("a")) setMenuOpen(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (!mainNav.classList.contains("is-open")) return;
+    if (event.key === "Escape") setMenuOpen(false, true);
+    if (event.key === "Tab") {
+      const items = [menuToggle, ...mainNav.querySelectorAll("a[href]")];
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first.focus();
+      }
     }
   });
+  const syncMenuBreakpoint = () => {
+    const wasOpen = mainNav.classList.contains("is-open");
+    setMenuOpen(false, wasOpen && mobileNavigation.matches);
+    if (wasOpen && !mobileNavigation.matches) {
+      mainNav.querySelector('[aria-current="page"]')?.focus();
+    }
+  };
+  if (typeof mobileNavigation.addEventListener === "function") {
+    mobileNavigation.addEventListener("change", syncMenuBreakpoint);
+  } else {
+    mobileNavigation.addListener(syncMenuBreakpoint);
+  }
 }
-
-function syncHeaderState() {
-  if (!siteHeader || !document.body.classList.contains("has-hero-header")) return;
-
-  const heroBottom = heroSection
-    ? heroSection.offsetTop + heroSection.offsetHeight
-    : 0;
-  const headerHeight = siteHeader.offsetHeight;
-  const isPastHero = window.scrollY >= Math.max(0, heroBottom - headerHeight);
-
-  siteHeader.classList.toggle("is-past-hero", isPastHero);
-}
-
-syncHeaderState();
-window.addEventListener("scroll", syncHeaderState, { passive: true });
-window.addEventListener("resize", syncHeaderState);
 
 function showRosterIssue() {
   if (!rosterStatus) return;
@@ -427,7 +434,7 @@ function renderGalleryCollections(galleries) {
 
       return `
         <a class="gallery-card gallery-collection-card" href="${escapeHtml(href)}">
-          <img src="${escapeHtml(gallery.coverImageUrl)}" alt="${escapeHtml(title)}" loading="lazy">
+          <img src="${escapeHtml(gallery.coverImageUrl)}" alt="${escapeHtml(title)}" loading="lazy" decoding="async" width="640" height="400">
           <span class="gallery-card-copy">
             <h2>${escapeHtml(title)}</h2>
             ${caption ? `<p>${escapeHtml(caption)}</p>` : ""}
@@ -445,11 +452,12 @@ function getSelectedGalleryId() {
 
 function openGalleryLightbox(imageUrl, altText) {
   if (!galleryLightbox || !galleryLightboxImage) return;
-
+  lightboxTrigger = document.activeElement;
   galleryLightboxImage.src = imageUrl;
   galleryLightboxImage.alt = altText;
   galleryLightbox.hidden = false;
   document.body.classList.add("has-gallery-lightbox");
+  document.querySelectorAll("body > header, body > main, body > footer").forEach((region) => { region.inert = true; });
   galleryLightboxClose?.focus();
 }
 
@@ -457,9 +465,12 @@ function closeGalleryLightbox() {
   if (!galleryLightbox || !galleryLightboxImage) return;
 
   galleryLightbox.hidden = true;
-  galleryLightboxImage.src = "";
+  galleryLightboxImage.removeAttribute("src");
   galleryLightboxImage.alt = "";
   document.body.classList.remove("has-gallery-lightbox");
+  document.querySelectorAll("body > header, body > main, body > footer").forEach((region) => { region.inert = false; });
+  lightboxTrigger?.focus();
+  lightboxTrigger = null;
 }
 
 function setupGalleryLightbox() {
@@ -477,6 +488,10 @@ function setupGalleryLightbox() {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !galleryLightbox.hidden) {
       closeGalleryLightbox();
+    }
+    if (event.key === "Tab" && !galleryLightbox.hidden) {
+      event.preventDefault();
+      galleryLightboxClose?.focus();
     }
   });
 }
@@ -506,7 +521,7 @@ function renderGalleryDetail(gallery) {
 
       return `
         <button class="gallery-photo-card" type="button" data-full-image="${escapeHtml(photo.imageUrl)}" data-alt="${escapeHtml(alt)}">
-          <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(alt)}" loading="lazy">
+          <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async" width="640" height="480">
         </button>
       `;
     })
@@ -749,6 +764,7 @@ function initContactForm() {
     const validation = validateContactForm();
     if (!validation?.isValid) {
       setContactStatus("Please correct the highlighted fields.", "error");
+      contactForm.querySelector('[aria-invalid="true"]')?.focus();
       return;
     }
 
@@ -1005,6 +1021,7 @@ function renderTeamCalendar(events) {
       <h3>${escapeHtml(formatMonthLabel(calendarMonthDate))}</h3>
       <button type="button" data-calendar-next>Next</button>
     </div>
+    <div class="calendar-month-grid" role="region" aria-label="Calendar dates" tabindex="0">
     <div class="calendar-weekdays" aria-hidden="true">
       <span>Sun</span>
       <span>Mon</span>
@@ -1016,6 +1033,7 @@ function renderTeamCalendar(events) {
     </div>
     <div class="calendar-grid">
       ${days.join("")}
+    </div>
     </div>
   `;
 

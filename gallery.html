@@ -2,14 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="theme-color" content="#081e32">
+    <link rel="icon" type="image/png" href="https://assets.chsboyssoccer.com/images/Cypress_High_School_40th_Anniversary_Logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
       content="Cypress Centurion Boys Soccer photo gallery."
     >
     <title>Gallery | Cypress High Soccer</title>
-    <link rel="stylesheet" href="styles.css?v=20261012-match-spacing">
-    <script src="script.js?v=20260524-countdown" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20261012-redesign">
+    <script src="script.js?v=20261012-redesign" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -17,6 +19,7 @@
       <div class="header-inner">
         <a class="brand" href="index.html#home" aria-label="Cypress Centurion Boys Soccer home">
           <img
+            width="64" height="68"
             class="brand-logo"
             src="https://assets.chsboyssoccer.com/images/Cypress_High_School_40th_Anniversary_Logo.png"
             alt="Cypress High School logo"
@@ -44,15 +47,16 @@
           <a href="meet-our-team.html">Team</a>
           <a href="schedule.html">Schedule</a>
           <a href="forms.html">Forms</a>
-          <a class="active" href="gallery.html">Gallery</a>
+          <a class="active" aria-current="page" href="gallery.html">Gallery</a>
           <a href="contact.html">Contact</a>
         </nav>
       </div>
     </header>
 
-    <main id="main-content" class="gallery-page">
+    <main id="main-content" tabindex="-1" class="gallery-page">
       <section class="gallery-section" aria-labelledby="gallery-title">
         <div class="gallery-heading">
+          <p class="eyebrow">CYPRESS CENTURION / BOYS SOCCER</p>
           <h1 id="gallery-title">Photo Gallery</h1>
           <p>Moments from Cypress Boys Soccer.</p>
           <p class="gallery-credit">Images created by AM8 Media - Angel Martinez.</p>
@@ -68,6 +72,17 @@
     </main>
 
     <footer class="site-footer">
+      <div class="footer-identity">
+        <strong>CYPRESS CENTURION</strong>
+        <span>Boys Soccer</span>
+      </div>
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <a href="meet-our-team.html">Team</a>
+        <a href="schedule.html">Schedule</a>
+        <a href="forms.html">Forms</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="contact.html">Contact</a>
+      </nav>
       <div class="social-links" aria-label="Social links">
         <a href="https://www.instagram.com/cypress_centurion_boys_soccer/" target="_blank" rel="noopener" aria-label="Instagram">
           <svg viewBox="0 0 24 24" aria-hidden="true">

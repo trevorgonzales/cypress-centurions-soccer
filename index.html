@@ -2,14 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="theme-color" content="#081e32">
+    <link rel="icon" type="image/png" href="https://assets.chsboyssoccer.com/images/Cypress_High_School_40th_Anniversary_Logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
       content="Cypress Centurion Boys Soccer official team website."
     >
     <title>Home | Cypress High Soccer</title>
-    <link rel="stylesheet" href="styles.css?v=20261012-match-spacing">
-    <script src="script.js?v=20260524-countdown" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20261012-redesign">
+    <script src="script.js?v=20261012-redesign" defer></script>
   </head>
   <body class="has-hero-header">
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -17,6 +19,7 @@
       <div class="header-inner">
         <a class="brand" href="index.html#home" aria-label="Cypress Centurion Boys Soccer home">
           <img
+            width="64" height="68"
             class="brand-logo"
             src="https://assets.chsboyssoccer.com/images/Cypress_High_School_40th_Anniversary_Logo.png"
             alt="Cypress High School logo"
@@ -40,7 +43,7 @@
         </button>
 
         <nav id="primary-navigation" class="main-nav" aria-label="Primary navigation">
-          <a class="active" href="index.html#home">Home</a>
+          <a class="active" aria-current="page" href="index.html#home">Home</a>
           <a href="meet-our-team.html">Team</a>
           <a href="schedule.html">Schedule</a>
           <a href="forms.html">Forms</a>
@@ -50,51 +53,57 @@
       </div>
     </header>
 
-    <main id="main-content">
+    <main id="main-content" tabindex="-1">
       <section id="home" class="hero" aria-label="Cypress Centurion soccer">
         <video
           class="hero-video"
-          autoplay
           loop
           muted
           playsinline
-          preload="metadata"
+          preload="none"
+          poster="https://cdn.myportfolio.com/1e484c76-e264-4c85-93b4-f8ad832389cf/87163567-fa90-4813-a097-20e36d536410_rw_1920.jpg?h=eaed4f2202327291cb3148762ef52d34"
           aria-hidden="true"
         >
           <source src="https://assets.chsboyssoccer.com/media/chs_boys_hero_video.mp4" type="video/mp4">
         </video>
+        <button class="video-toggle" type="button" data-video-toggle aria-label="Pause background video">Pause video</button>
         <div class="hero-content">
+          <p class="hero-kicker">CYPRESS HIGH SCHOOL · BOYS SOCCER</p>
           <h1>
             <span class="hero-line line-1">One Team.</span>
             <span class="hero-line line-2">One Goal.</span>
             <span class="hero-line line-3">No Limits.</span>
           </h1>
-          <p class="hero-line line-4">..this is Centurion Soccer</p>
+          <p class="hero-line line-4">This is Centurion Soccer.</p>
+          <div class="hero-actions">
+            <a class="button-primary" href="schedule.html">View the schedule <span aria-hidden="true">↗</span></a>
+            <a class="button-secondary" href="meet-our-team.html">Meet the team</a>
+          </div>
         </div>
       </section>
 
       <section id="team" class="match-section">
-        <div class="match-countdown" data-match-countdown hidden>
+        <div class="match-countdown" data-match-countdown>
           <p class="countdown-kicker">Upcoming Match</p>
-          <div class="countdown-grid" aria-live="polite">
+          <div class="countdown-grid" aria-label="Time until the next match">
             <div class="countdown-unit" data-countdown-unit="months">
-              <span data-countdown-months>0</span>
+              <span data-countdown-months>—</span>
               <small>Months</small>
             </div>
             <div class="countdown-unit" data-countdown-unit="days">
-              <span data-countdown-days>0</span>
+              <span data-countdown-days>—</span>
               <small>Days</small>
             </div>
             <div class="countdown-unit">
-              <span data-countdown-hours>0</span>
+              <span data-countdown-hours>—</span>
               <small>Hours</small>
             </div>
             <div class="countdown-unit">
-              <span data-countdown-minutes>0</span>
+              <span data-countdown-minutes>—</span>
               <small>Minutes</small>
             </div>
             <div class="countdown-unit">
-              <span data-countdown-seconds>0</span>
+              <span data-countdown-seconds>—</span>
               <small>Seconds</small>
             </div>
           </div>
@@ -108,6 +117,7 @@
           <div class="match-row">
             <img
               class="team-mark cypress-mark"
+              width="145" height="145"
               src="https://assets.chsboyssoccer.com/images/Cypress_High_School_40th_Anniversary_Logo.png"
               alt="Cypress High School"
             >
@@ -121,6 +131,7 @@
             <div class="opponent-slot">
               <img
                 class="team-mark opponent-mark"
+                width="145" height="145"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
                 alt=""
                 aria-hidden="true"
@@ -157,9 +168,22 @@
 
       <section id="forms" class="sr-only" aria-label="Forms"></section>
       <section id="contact" class="sr-only" aria-label="Contact"></section>
+      <section class="home-links" aria-labelledby="resources-title">
+        <div>
+          <p class="eyebrow">THE CENTURION COMMUNITY</p>
+          <h2 id="resources-title">Everything you need.<br>All in one place.</h2>
+        </div>
+        <nav aria-label="Team resources">
+          <a href="meet-our-team.html"><span aria-hidden="true">01</span> Meet our team <b aria-hidden="true">↗</b></a>
+          <a href="forms.html"><span aria-hidden="true">02</span> Player forms <b aria-hidden="true">↗</b></a>
+          <a href="gallery.html"><span aria-hidden="true">03</span> Photo gallery <b aria-hidden="true">↗</b></a>
+          <a href="contact.html"><span aria-hidden="true">04</span> Get in touch <b aria-hidden="true">↗</b></a>
+        </nav>
+      </section>
     </main>
 
     <section class="sponsors" aria-label="Sponsors">
+      <p class="sponsor-caption">WITH THANKS TO OUR SPONSORS</p>
       <div class="sponsor-strip">
         <img
           src="https://assets.chsboyssoccer.com/images/IWM_Inc_Color_36_-removebg-preview_edited.png"
@@ -177,6 +201,17 @@
     </section>
 
     <footer class="site-footer">
+      <div class="footer-identity">
+        <strong>CYPRESS CENTURION</strong>
+        <span>Boys Soccer</span>
+      </div>
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <a href="meet-our-team.html">Team</a>
+        <a href="schedule.html">Schedule</a>
+        <a href="forms.html">Forms</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="contact.html">Contact</a>
+      </nav>
       <div class="social-links" aria-label="Social links">
         <a href="https://www.instagram.com/cypress_centurion_boys_soccer/" target="_blank" rel="noopener" aria-label="Instagram">
           <svg viewBox="0 0 24 24" aria-hidden="true">
