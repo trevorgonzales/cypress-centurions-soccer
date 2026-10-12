@@ -32,9 +32,17 @@ body {
 }
 
 main {
-  flex: 1 0 auto;
+  flex: 1 0 0px;
   display: flex;
   flex-direction: column;
+}
+
+main > section {
+  flex-shrink: 0;
+}
+
+body:not(.has-hero-header) main > section {
+  flex-grow: 1;
 }
 
 img,
@@ -354,7 +362,7 @@ body:not(.has-hero-header) main {
 }
 
 .sponsors {
-  order: 10;
+  flex-shrink: 0;
   background: var(--dark-strip);
 }
 
@@ -383,6 +391,7 @@ body:not(.has-hero-header) main {
 }
 
 .match-section {
+  flex-grow: 1;
   padding: 60px 16px;
   background: var(--page-gray);
   display: grid;
@@ -1646,10 +1655,6 @@ body:not(.has-hero-header) main {
     flex-direction: row;
     flex-wrap: nowrap;
     padding: 28px 0;
-  }
-
-  .sponsors {
-    order: 0;
   }
 
   .sponsor-strip img {
